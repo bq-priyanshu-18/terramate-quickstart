@@ -31,14 +31,14 @@ jobs:
         run: terramate list
 
       - name: Create Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
+        if: ${{ steps.list.outputs.stdout != '' }}
         run: |
           terramate run terraform init
           terramate run terraform validate
           terramate run terraform plan -out out.tfplan
 
       - name: Generate Preview Comment
-        if: steps.list.outputs.stdout
+        if: ${{ steps.list.outputs.stdout != '' }}
         id: comment
         run: |
           echo "### List of Changed Stacks" >> pr-comment.txt
@@ -53,11 +53,13 @@ jobs:
           terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
           echo '```' >> pr-comment.txt
           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+
       - name: Inform about no Changed Stacks
-        if: (!steps.list.outputs.stdout)
+        if: ${{ steps.list.outputs.stdout == '' }}
         run: |
           echo '### No changed stacks.' >> pr-comment.txt
           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+
       - name: Publish Plans for Changed Stacks
         uses: marocchino/sticky-pull-request-comment@v2
         with:
