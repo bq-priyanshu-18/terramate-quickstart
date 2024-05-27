@@ -3,7 +3,7 @@ name: Preview Terraform
 on:
   push:
     branches:
-      - feat/terramate-lambda
+      - main
 
 permissions:
   issues: write
