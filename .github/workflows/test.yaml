@@ -17,7 +17,7 @@ jobs:
 
     runs-on: ubuntu-latest
     container: 
-      image: public.ecr.aws/n0b3u4v2/tf-actions:0.9.0
+      image: public.ecr.aws/n0b3u4v2/tf-actions:latest
 
     steps:
       - name: Checkout
