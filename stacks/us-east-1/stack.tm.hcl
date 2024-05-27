@@ -1,5 +1,5 @@
 stack {
   name        = "us-east-1"
   description = "us-east-1"
-  id          = "ae8b85f3-6d28-4f62-bd14-e3ef75a8b35d"
+  id          = "aa3163b5-bf1b-4270-ab49-f4e094caa907"
 }

@@ -37,11 +37,11 @@ jobs:
 
       - name: List changed stacks
         id: list
-        run: terramate list --changed
+        run: terramate list
 
       - name: Run Terraform init on changed stacks
         if: steps.list.outputs.stdout
-        run: terramate run --changed -- terraform init
+        run: terramate run terraform init
 
       - name: Create Terraform plan on changed stacks
         if: steps.list.outputs.stdout
