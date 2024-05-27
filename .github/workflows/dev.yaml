@@ -38,6 +38,7 @@ jobs:
         # if: steps.list.outputs.stdout
         id: init
         run: |
+          terramate generate
           terramate list
           terramate run terraform init
           terramate run terraform plan
