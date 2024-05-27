@@ -6,35 +6,75 @@ on:
       - terramate-test
  
 jobs:
-  terramate-plan:
-    name: Terramate Plan
+  deploy:
+    name: Deploy Terraform changes in changed Terramate stacks
+
     permissions:
       id-token: write
       contents: read
 
     runs-on: ubuntu-latest
-    container: 
-      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Initialize Git repository
-        run: git init
-  
+      # Install tooling
+
+      - name: Install Terramate
+        uses: terramate-io/terramate-action@v1
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.4
+          terraform_wrapper: false
+
+      # Check for changed stacks
+
       - name: List changed stacks
         id: list
         run: terramate list --changed
 
-      - name: Run Terraform init on changed stacks
-        if: steps.list.outputs.stdout
-        run: terramate run --changed -- terraform init
+# name: Terraform Deployment
 
-      - name: Create Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
-        run: terramate run terraform plan
+# on:
+#   push:
+#     branches:
+#       - terramate-test
+ 
+# jobs:
+#   terramate-plan:
+#     name: Terramate Plan
+#     permissions:
+#       id-token: write
+#       contents: read
+
+#     runs-on: ubuntu-latest
+#     container: 
+#       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+
+#       - name: Initialize Git repository
+#         run: git init
+  
+#       - name: List changed stacks
+#         id: list
+#         run: terramate list --changed
+
+#       - name: Run Terraform init on changed stacks
+#         if: steps.list.outputs.stdout
+#         run: terramate run --changed -- terraform init
+
+#       - name: Create Terraform plan on changed stacks
+#         if: steps.list.outputs.stdout
+#         run: terramate run terraform plan
 
   # terramate-apply:
   #   name: Terramate Apply
