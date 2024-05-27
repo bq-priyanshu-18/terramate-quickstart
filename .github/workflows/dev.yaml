@@ -28,6 +28,9 @@ jobs:
         id: list
         run: terramate list
 
+      - name: 
+        run: terramate generate
+
       - name: Run Terraform init on changed stacks
         if: steps.list.outputs.stdout
         run: terramate run terraform init
