@@ -1,6 +1,6 @@
 terramate {
-  required_version = "~> 0.8.2"
-  # required_version = "~> 0.9.0-rc1"
+  # required_version = "~> 0.8.2"
+  required_version = "~> 0.9.0-rc1"
 
   config {
     run {
@@ -9,7 +9,7 @@ terramate {
     }
 
     git {
-      default_branch = "feat/terramate-lambda"
+      default_branch = "terramate-test"
       default_remote = "origin"
 
       check_untracked   = false
