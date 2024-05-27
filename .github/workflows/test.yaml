@@ -1,82 +1,158 @@
-name: Preview Terraform
+name: Terraform Deployment
 
 on:
   push:
     branches:
       - terramate-test
 
-permissions:
-  issues: write
-  id-token: write
-  contents: write
-  pull-requests: write
-
 jobs:
-  infra-deployment:
-    name: infra-deployment
+  deploy:
+    name: Deploy Terraform changes in changed Terramate stacks
+
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+      checks: read
+
     runs-on: ubuntu-latest
     container: 
       image: alexvcov/terramate:0.3
+      
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: terramate generate
-        run: terramate generate
+      # Install tooling
+
+      # - name: Install Terramate
+      #   uses: terramate-io/terramate-action@v1
+
+      # - name: Install Terraform
+      #   uses: hashicorp/setup-terraform@v3
+      #   with:
+      #     terraform_version: 1.7.4
+      #     terraform_wrapper: false
+
+      # Check for changed stacks
 
       - name: List changed stacks
         id: list
-        run: terramate list
+        run: terramate list --changed
 
-      # - name: Create Terraform plan on changed stacks
-      #   run: |
-      #     terramate --version    
+      # Configure cloud credentials
+
+      # - name: Configure AWS credentials via OIDC
+      #   if: steps.list.outputs.stdout
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-region: 'CHANGEME: AWS REGION'
+      #     role-to-assume: 'CHANGEME: IAM ROLE ARN'
+
+      # Run the Terraform deployment via Terramate in each changed stack
+
+      - name: Run Terraform init on changed stacks
+        if: steps.list.outputs.stdout
+        run: terramate run --changed -- terraform init
 
       - name: Create Terraform plan on changed stacks
         if: steps.list.outputs.stdout
-        run: |
-          terramate run --changed -- terraform init
-          terramate run --changed -- terraform validate
-          terramate run --changed -- terraform plan -out out.tfplan
+        run: terramate run --changed -- terraform plan -lock-timeout=5m -out out.tfplan
 
-        # terramate run terraform init
-        # terramate run terraform validate
-        # terramate run terraform plan -out out.tfplan
-
-      - name: Generate Preview Comment
+      - name: Apply planned changes on changed stacks
         if: steps.list.outputs.stdout
-        id: comment
-        run: |
-          echo "### List of Changed Stacks" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```bash' >> pr-comment.txt
-          echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo "#### Terraform Plan" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```terraform' >> pr-comment.txt
-          terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+        run: terramate run --changed --sync-deployment --terraform-plan-file=out.tfplan -- terraform apply -input=false -auto-approve -lock-timeout=5m out.tfplan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Inform about no Changed Stacks
-        if: (!steps.list.outputs.stdout)
-        run: |
-          echo '### No changed stacks.' >> pr-comment.txt
-          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+      # Run a health check
 
-      - name: Publish Plans for Changed Stacks
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: terraform-plan
-          path: pr-comment.txt
+      - name: Run drift detection
+        if: steps.list.outputs.stdout && ! cancelled() && steps.apply.outcome != 'skipped'
+        run: terramate run --changed --sync-drift-status --terraform-plan-file=drift.tfplan -- terraform plan -out drift.tfplan -detailed-exitcode
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+# name: Preview Terraform
 
-      - name: Apply Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
-        run: |
-          terramate run terraform apply -input=false -auto-approve
+# on:
+#   push:
+#     branches:
+#       - terramate-test
+
+# permissions:
+#   issues: write
+#   id-token: write
+#   contents: write
+#   pull-requests: write
+
+# jobs:
+#   infra-deployment:
+#     name: infra-deployment
+#     runs-on: ubuntu-latest
+#     container: 
+#       image: alexvcov/terramate:0.3
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#         with:
+#           ref: ${{ github.head_ref }}
+#           fetch-depth: 0
+
+#       - name: terramate generate
+#         run: terramate generate
+
+#       - name: List changed stacks
+#         id: list
+#         run: terramate list
+
+#       # - name: Create Terraform plan on changed stacks
+#       #   run: |
+#       #     terramate --version    
+
+#       - name: Create Terraform plan on changed stacks
+#         if: steps.list.outputs.stdout
+#         run: |
+#           terramate run --changed -- terraform init
+#           terramate run --changed -- terraform validate
+#           terramate run --changed -- terraform plan -out out.tfplan
+
+#         # terramate run terraform init
+#         # terramate run terraform validate
+#         # terramate run terraform plan -out out.tfplan
+
+#       - name: Generate Preview Comment
+#         if: steps.list.outputs.stdout
+#         id: comment
+#         run: |
+#           echo "### List of Changed Stacks" >> pr-comment.txt
+#           echo >> pr-comment.txt
+#           echo '```bash' >> pr-comment.txt
+#           echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
+#           echo '```' >> pr-comment.txt
+#           echo >> pr-comment.txt
+#           echo "#### Terraform Plan" >> pr-comment.txt
+#           echo >> pr-comment.txt
+#           echo '```terraform' >> pr-comment.txt
+#           terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
+#           echo '```' >> pr-comment.txt
+#           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+
+#       - name: Inform about no Changed Stacks
+#         if: (!steps.list.outputs.stdout)
+#         run: |
+#           echo '### No changed stacks.' >> pr-comment.txt
+#           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+
+#       # - name: Publish Plans for Changed Stacks
+#       #   uses: marocchino/sticky-pull-request-comment@v2
+#       #   with:
+#       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       #     header: terraform-plan
+#       #     path: pr-comment.txt
+
+#       - name: Apply Terraform plan on changed stacks
+#         if: steps.list.outputs.stdout
+#         run: |
+#           terramate run terraform apply -input=false -auto-approve
