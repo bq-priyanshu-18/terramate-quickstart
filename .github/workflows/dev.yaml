@@ -15,6 +15,8 @@ jobs:
   infra-deployment:
     name: infra-deployment
     runs-on: ubuntu-latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,10 +24,10 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
-        with:
-            version: "latest"
+      # - name: Install Terramate
+      #   uses: terramate-io/terramate-action@v1
+      #   with:
+      #       version: "latest"
 
       - name: terramate generate
         run: terramate generate
