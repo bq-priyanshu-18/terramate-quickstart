@@ -16,8 +16,8 @@ jobs:
     name: terramate plan
 
     runs-on: ubuntu-latest
-    # container: 
-    #   image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:0.8.4 
 
     steps:
       - name: Checkout
@@ -26,15 +26,9 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
+      # - name: Install Terramate
+      #   uses: terramate-io/terramate-action@v1
 
-      # - name: Install Terraform
-      #   uses: hashicorp/setup-terraform@v3
-      #   with:
-      #     terraform_version: 1.7.4
-      #     terraform_wrapper: false
-   
       - name: Run Terraform init on changed stacks
         # if: steps.list.outputs.stdout
         id: init

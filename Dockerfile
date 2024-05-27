@@ -23,7 +23,7 @@ RUN (curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/insta
 ENV PATH="/root/.pulumi/bin:${PATH}"
 
 # Second stage: use the terramate image
-FROM ghcr.io/terramate-io/terramate AS terramate
+FROM ghcr.io/terramate-io/terramate:0.8.4 AS terramate
 
 # Run terramate command to check the version
 RUN terramate --version
