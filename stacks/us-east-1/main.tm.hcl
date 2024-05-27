@@ -57,9 +57,3 @@ generate_hcl "_variables.tf" {
   content {
   }
 }
-
-
-generate_hcl "_test.tf" {
-  content {
-  }
-}
