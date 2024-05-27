@@ -16,10 +16,14 @@ RUN (curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/insta
 
 ENV PATH="/root/.pulumi/bin:${PATH}"
 
-# # Second stage: use the terramate image
-# FROM ghcr.io/terramate-io/terramate:0.8.4 AS terramate
+RUN curl -fsSL https://releases.hashicorp.com/terraform/1.8.4/terraform_1.8.4_linux_amd64.zip -o terraform.zip && \
+    unzip terraform.zip -d /usr/local/bin/ && \
+    chmod +x /usr/local/bin/terraform && \
+    rm terraform.zip
 
-# # Run terramate command to check the version
-# RUN terramate --version
-# # Set entry point for interactive access
-# ENTRYPOINT ["/bin/bash"]
+RUN apk add -U rpm
+
+# Download and install Terramate
+RUN curl -fsSL https://github.com/terramate-io/terramate/releases/download/v0.8.4/terramate_0.8.4_linux_amd64.rpm -o terramate.rpm && \
+    rpm -i terramate.rpm && \
+    rm terramate.rpm

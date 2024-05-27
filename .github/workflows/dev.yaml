@@ -26,15 +26,15 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
-        with:
-          version: 0.8.4
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.7.4
-          terraform_wrapper: false
+      # - name: Install Terramate
+      #   uses: terramate-io/terramate-action@v1
+      #   with:
+      #     version: 0.8.4
+      # - name: Install Terraform
+      #   uses: hashicorp/setup-terraform@v3
+      #   with:
+      #     terraform_version: 1.7.4
+      #     terraform_wrapper: false
    
       - name: Run Terraform init on changed stacks
         # if: steps.list.outputs.stdout
@@ -72,31 +72,31 @@ jobs:
       #     header: terraform-plan
       #     path: pr-comment.txt
 
-#   # terramate-apply:
-#   #   name: Terramate Apply
-#   #   runs-on: ubuntu-latest
-#   #   container: 
-#   #     image: public.ecr.aws/o0i6i2m0/tf-actions:latest
-#   #   environment: terrraform_apply
-#   #   steps: 
-#   #     - name: Checkout
-#   #       uses: actions/checkout@v4
-#   #       with:
-#   #         fetch-depth: 0
+  terramate-apply:
+    name: Terramate Apply
+    runs-on: ubuntu-latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+    # environment: terrraform_apply    # environment: terrraform_apply
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-#   #     - name: List changed stacks
-#   #       id: list
-#   #       run: terramate list 
+      - name: List changed stacks
+        id: list
+        run: terramate list 
 
-#   #     - name: Run Terraform init on changed stacks
-#   #       if: steps.list.outputs.stdout
-#   #       run: terramate run terraform init
+      - name: Run Terraform init on changed stacks
+        if: steps.list.outputs.stdout
+        run: terramate run terraform init
 
-#   #     - name: Apply planned changes on changed stacks
-#   #       if: steps.list.outputs.stdout
-#   #       run: terramate run terraform apply out.tfplan
-#   #       env:
-#   #         GITHUB_TOKEN: ${{ github.token }}
+      - name: Apply planned changes on changed stacks
+        if: steps.list.outputs.stdout
+        run: terramate run terraform apply out.tfplan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
 # name: Terraform Deployment
 
