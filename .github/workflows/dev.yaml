@@ -34,14 +34,49 @@ jobs:
           terraform_version: 1.7.4
           terraform_wrapper: false
 
-      - name: Run Terraform init on changed stacks
-        # if: steps.list.outputs.stdout
-        id: init
+      - name: terramate generate
+        run: terramate generate
+
+      - name: List changed stacks
+        id: list
+        run: terramate list
+
+      - name: Create Terraform plan on changed stacks
+        if: steps.list.outputs.stdout
         run: |
-          terramate generate
-          terramate list
           terramate run terraform init
-          terramate run terraform plan
+          terramate run terraform validate
+          terramate run terraform plan -out out.tfplan
+
+      - name: Generate Preview Comment
+        if: steps.list.outputs.stdout
+        id: comment
+        run: |
+          echo "### List of Changed Stacks" >> pr-comment.txt
+          echo >> pr-comment.txt
+          echo '```bash' >> pr-comment.txt
+          echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
+          echo '```' >> pr-comment.txt
+          echo >> pr-comment.txt
+          echo "#### Terraform Plan" >> pr-comment.txt
+          echo >> pr-comment.txt
+          echo '```terraform' >> pr-comment.txt
+          terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
+          echo '```' >> pr-comment.txt
+          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Inform about no Changed Stacks
+        if: (!steps.list.outputs.stdout)
+        run: |
+          echo '### No changed stacks.' >> pr-comment.txt
+          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Publish Plans for Changed Stacks
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: terraform-plan
+          path: pr-comment.txt
 
   terramate-apply:
     needs: terramate-plan
@@ -68,8 +103,11 @@ jobs:
           terraform_version: 1.7.4
           terraform_wrapper: false 
 
-      - name: Run Terraform init on changed stacks
-        id: init
+      - name: List changed stacks
+        id: list
+        run: terramate list
+
+      - name: Apply Terraform plan on changed stacks
+        if: steps.list.outputs.stdout
         run: |
-          terramate run terraform init
-          terramate run terraform apply -input=false -auto-approve -lock-timeout=5m
+          terramate run terraform apply -input=false -auto-approve
