@@ -3,7 +3,7 @@ name: Preview Terraform
 on:
   push:
     branches:
-      - terramate-test
+      - terramate-testa
 
 permissions:
   issues: write
@@ -82,7 +82,7 @@ jobs:
         if: steps.list.outputs.stdout
         run: |
           terramate run --changed -- terraform init
-          
+
       - name: Apply Terraform plan on changed stacks
         run: |
           terramate run terraform apply

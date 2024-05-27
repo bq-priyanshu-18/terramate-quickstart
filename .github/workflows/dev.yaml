@@ -1,9 +1,9 @@
-name: Preview Terraform
+# name: Preview Terraform
 
 on:
   push:
     branches:
-      - main
+      - terramate-test
 
 permissions:
   issues: write
@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  infra-plan:
+  infra-deployment:
     name: infra-deployment
     runs-on: ubuntu-latest
     steps:
@@ -40,7 +40,6 @@ jobs:
           terramate run terraform init
           terramate run terraform validate
           terramate run terraform plan -out out.tfplan
-
       - name: Generate Preview Comment
         if: steps.list.outputs.stdout
         id: comment
@@ -57,13 +56,11 @@ jobs:
           terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
           echo '```' >> pr-comment.txt
           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
-
       - name: Inform about no Changed Stacks
         if: (!steps.list.outputs.stdout)
         run: |
           echo '### No changed stacks.' >> pr-comment.txt
           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
-
       - name: Publish Plans for Changed Stacks
         uses: marocchino/sticky-pull-request-comment@v2
         with:
@@ -71,113 +68,12 @@ jobs:
           header: terraform-plan
           path: pr-comment.txt
 
-  infra-apply:
-    name: infra-deployment
-    runs-on: ubuntu-latest
-    environment: "terrraform_apply"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: trstringer/manual-approval@v1
         with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
-        with:
-            version: "latest"
-
-      - name: terramate generate
-        run: terramate generate
-
-      - name: List changed stacks
-        id: list
-        run: terramate list
-
-      - name: Create Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
-        run: |
-          terramate run terraform init
-          terramate run terraform validate
-          terramate run terraform plan -out out.tfplan
-
-      - name: Generate Preview Comment
-        if: steps.list.outputs.stdout
-        id: comment
-        run: |
-          echo "### List of Changed Stacks" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```bash' >> pr-comment.txt
-          echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo "#### Terraform Plan" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```terraform' >> pr-comment.txt
-          terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
-
-      - name: Inform about no Changed Stacks
-        if: (!steps.list.outputs.stdout)
-        run: |
-          echo '### No changed stacks.' >> pr-comment.txt
-          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
-
-      # - name: Publish Plans for Changed Stacks
-      #   uses: marocchino/sticky-pull-request-comment@v2
-      #   with:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     header: terraform-plan
-      #     path: pr-comment.txt
-
-      # - uses: trstringer/manual-approval@v1
-      #   with:
-      #     secret: ${{ github.TOKEN }}
-      #     approvers: sarthakvec,kunal-relan
+          secret: ${{ github.TOKEN }}
+          approvers: sarthakvec,kunal-relan
 
       - name: Apply Terraform plan on changed stacks
         if: steps.list.outputs.stdout
         run: |
-          terramate run terraform apply
-
-
-# name: main
-# # on:
-# #   workflow_dispatch:
-# on:
-#   push:
-#     branches:
-#       - main
-  
-
-# jobs:
-#   preview:
-#     name: Plan
-#     runs-on: ubuntu-latest
-#     permissions:
-#       issues: write
-#       id-token: write
-#       contents: write
-#       pull-requests: write  
-#   build:
-#     name: build
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Build
-#         run: echo building
-#   deploy:
-#     name: deploy
-#     runs-on: ubuntu-latest
-#     needs: build
-#     steps:
-#       - uses: trstringer/manual-approval@v1
-#         with:
-#           secret: ${{ github.TOKEN }}
-#           approvers: bq-satyam-08,bq-priyanshu-18
-#       - name: Deploy to production
-#         run: echo deploying
-
-
-
-#         terrraform_apply
+          terramate run terraform apply -input=false -auto-approve
