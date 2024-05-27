@@ -4,16 +4,14 @@ on:
   push:
     branches:
       - terramate-test
-
-permissions:
-  id-token: write
-  contents: read
-  pull-requests: read
-  checks: read
-  
+ 
 jobs:
   terramate-plan:
     name: Terramate Plan
+    permissions:
+      id-token: write
+      contents: read
+
     runs-on: ubuntu-latest
     container: 
       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
@@ -38,7 +36,7 @@ jobs:
         if: steps.list.outputs.stdout
         run: terramate run terraform plan
 
-  terramate-apply:
+  # terramate-apply:
     name: Terramate Apply
     runs-on: ubuntu-latest
     container: 
