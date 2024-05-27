@@ -21,8 +21,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - name: terramate generate
-      #   run: terramate generate 
+      - name: Initialize Git repository
+        run: git init
   
       - name: List changed stacks
         id: list
