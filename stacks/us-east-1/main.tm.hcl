@@ -33,17 +33,17 @@ generate_hcl "_main.tf" {
 
     provider "aws" {
       region = us-east-2
-      allowed_account_ids = ["63421378578223"]
-      shared_config_files = [var.tfc_aws_dynamic_credentials.default.shared_config_file]
+      # allowed_account_ids = ["63421378578223"]
+      # shared_config_files = [var.tfc_aws_dynamic_credentials.default.shared_config_file]
     }
-    provider "vault" {
-        skip_child_token = true
-        address          = var.tfc_vault_dynamic_credentials.default.address
+    # provider "vault" {
+    #     skip_child_token = true
+    #     address          = var.tfc_vault_dynamic_credentials.default.address
 
-        auth_login_token_file {
-            filename = var.tfc_vault_dynamic_credentials.default.token_filename
-        }
-    }    
+    #     auth_login_token_file {
+    #         filename = var.tfc_vault_dynamic_credentials.default.token_filename
+    #     }
+    # }    
   }
 }
 
@@ -59,7 +59,10 @@ generate_hcl "_variables.tf" {
 }
 
 
-generate_hcl "test.tf" {
+generate_hcl "_test.tf" {
   content {
+    resource "aws_vpc" "main" {
+      cidr_block = "10.0.0.0/16"
+    }
   }
 }

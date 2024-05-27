@@ -13,7 +13,7 @@ permissions:
   
 jobs:
   terramate-plan:
-    name: Deploy Terraform changes in changed Terramate stacks
+    name: Terramate Plan
     runs-on: ubuntu-latest
     container: 
       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
@@ -39,7 +39,7 @@ jobs:
         run: terramate run terraform plan
 
   terramate-apply:
-    name: Deploy Terraform changes in changed Terramate stacks
+    name: Terramate Apply
     runs-on: ubuntu-latest
     container: 
       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
