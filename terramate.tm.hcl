@@ -9,12 +9,8 @@ terramate {
     }
 
     git {
-      default_branch = "feat/terramate-lambda"
+      default_branch = "terramate-test"
       default_remote = "origin"
-
-      check_untracked   = false
-      check_uncommitted = false
-      check_remote      = false
     }
   }
 }
