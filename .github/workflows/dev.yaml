@@ -6,14 +6,16 @@ on:
       - terramate-test
  
 jobs:
-  deploy:
-    name: Deploy Terraform changes in changed Terramate stacks
+  terramate-plan:
+    name: terramate plan
 
     permissions:
       id-token: write
       contents: read
 
     runs-on: ubuntu-latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
 
     steps:
       - name: Checkout
@@ -21,20 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Install tooling
-
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
-        with:
-          version: "0.9.0-rc1"
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.7.4
-          terraform_wrapper: false
-
       # Check for changed stacks
-
       - name: List changed stacks
         id: list
         run: terramate list
@@ -45,7 +34,34 @@ jobs:
 
       - name: Create Terraform plan on changed stacks
         if: steps.list.outputs.stdout
-        run: terramate run terraform plan       
+        run: terramate run terraform plan
+
+  terramate-apply:
+    name: Terramate Apply
+    runs-on: ubuntu-latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+    environment: terrraform_apply
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: List changed stacks
+        id: list
+        run: terramate list 
+
+      - name: Run Terraform init on changed stacks
+        if: steps.list.outputs.stdout
+        run: terramate run terraform init
+
+      - name: Apply planned changes on changed stacks
+        if: steps.list.outputs.stdout
+        run: terramate run terraform apply out.tfplan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
 # name: Terraform Deployment
 
 # on:
