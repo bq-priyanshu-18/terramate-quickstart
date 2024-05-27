@@ -16,7 +16,7 @@ jobs:
     name: infra-deployment
     runs-on: ubuntu-latest
     container: 
-      image: public.ecr.aws/n0b3u4v2/tf-actions:latest
+      image: alexvcov/terramate:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
