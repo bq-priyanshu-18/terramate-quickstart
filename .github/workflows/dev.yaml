@@ -25,7 +25,8 @@ jobs:
 
       - name: Install Terramate
         uses: terramate-io/terramate-action@v1
-
+        with:
+          version: "0.9.0-rc1"
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
