@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: alexvcov/terramate:0.3
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
 
       - name: List changed stacks
         id: list
-        run: terramate list --changed
+        run: terramate list
 
       # Configure cloud credentials
 
