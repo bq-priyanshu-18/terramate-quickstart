@@ -16,8 +16,8 @@ jobs:
     name: terramate plan
 
     runs-on: ubuntu-latest
-    # container: 
-    #   image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
 
     steps:
       - name: Checkout
