@@ -17,7 +17,7 @@ jobs:
 
     runs-on: ubuntu-latest
     container: 
-      image: alexvcov/terramate:0.3
+      image: public.ecr.aws/n0b3u4v2/tf-actions:0.9.0
 
     steps:
       - name: Checkout
@@ -37,6 +37,11 @@ jobs:
       #     terraform_wrapper: false
 
       # Check for changed stacks
+      - name: List changed stacks
+        run: terramate --version
+
+      - name: List changed stacks
+        run: terramate generate
 
       - name: List changed stacks
         id: list
