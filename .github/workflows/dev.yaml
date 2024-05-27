@@ -117,16 +117,16 @@ jobs:
 
       - name: List changed stacks
         id: list
-        run: terramate list --changed
+        run: terramate list 
 
       # Configure cloud credentials
 
-      - name: Configure AWS credentials via OIDC
-        if: steps.list.outputs.stdout
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: 'CHANGEME: AWS REGION'
-          role-to-assume: 'CHANGEME: IAM ROLE ARN'
+      # - name: Configure AWS credentials via OIDC
+      #   if: steps.list.outputs.stdout
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-region: 'CHANGEME: AWS REGION'
+      #     role-to-assume: 'CHANGEME: IAM ROLE ARN'
 
       # Run the Terraform deployment via Terramate in each changed stack
 
