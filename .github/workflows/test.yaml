@@ -16,7 +16,7 @@ jobs:
     name: infra-deployment
     runs-on: ubuntu-latest
     container: 
-      image: alexvcov/terramate:latest
+      image: alexvcov/terramate:0.3
     steps:
       - name: Checkout
         uses: actions/checkout@v3
