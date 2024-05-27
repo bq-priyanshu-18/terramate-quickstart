@@ -71,6 +71,18 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
+      - name: terramate generate
+        run: terramate generate
+
+      - name: List changed stacks
+        id: list
+        run: terramate list  
+
+      - name: Create Terraform plan on changed stacks
+        if: steps.list.outputs.stdout
+        run: |
+          terramate run --changed -- terraform init
+          
       - name: Apply Terraform plan on changed stacks
         run: |
           terramate run terraform apply
