@@ -27,6 +27,9 @@ jobs:
           fetch-depth: 0
 
       - name: List changed stacks
+        run: terramate generate
+  
+      - name: List changed stacks
         id: list
         run: terramate list
 
