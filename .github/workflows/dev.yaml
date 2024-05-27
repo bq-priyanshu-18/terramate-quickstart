@@ -33,8 +33,9 @@ jobs:
           terramate list
           terramate run terraform init
           terramate run terraform plan
-          
+
   terramate-apply:
+    needs: terramate-plan
     name: Terramate Apply
     runs-on: ubuntu-latest
     container: 
