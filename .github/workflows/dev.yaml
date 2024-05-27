@@ -31,7 +31,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.7.4
+          terraform_version: 1.8.4
           terraform_wrapper: false
 
       - name: terramate generate
@@ -40,7 +40,7 @@ jobs:
       - name: List changed stacks
         id: list
         run: terramate list 
-        
+
       - name: Create Terraform plan on changed stacks
         if: steps.list.outputs.stdout
         run: |
