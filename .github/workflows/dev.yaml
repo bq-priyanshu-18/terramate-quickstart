@@ -52,5 +52,5 @@ jobs:
         # if: steps.list.outputs.stdout
         id: init
         run: |
-          terramate run --changed -- terraform init
-          terramate run --changed -- terraform apply -input=false -auto-approve -lock-timeout=5m
+          terramate run terraform init
+          terramate run terraform apply -input=false -auto-approve -lock-timeout=5m
