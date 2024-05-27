@@ -93,6 +93,8 @@ jobs:
       checks: read
 
     runs-on: ubuntu-latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
 
     steps:
       - name: Checkout
@@ -102,14 +104,14 @@ jobs:
 
       # Install tooling
 
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
+      # - name: Install Terramate
+      #   uses: terramate-io/terramate-action@v1
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.7.4
-          terraform_wrapper: false
+      # - name: Install Terraform
+      #   uses: hashicorp/setup-terraform@v3
+      #   with:
+      #     terraform_version: 1.7.4
+      #     terraform_wrapper: false
 
       # Check for changed stacks
 
