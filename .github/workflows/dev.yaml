@@ -1,69 +1,69 @@
-# name: Terraform Deployment
+name: Terraform Deployment
 
-# on:
-#   push:
-#     branches:
-#       - terramate-test
+on:
+  push:
+    branches:
+      - terramate-test
  
-# permissions:
-#   issues: write
-#   id-token: write
-#   contents: write
-#   pull-requests: write      
+permissions:
+  issues: write
+  id-token: write
+  contents: write
+  pull-requests: write      
 
-# jobs:
-#   terramate-plan:
-#     name: terramate plan
+jobs:
+  terramate-plan:
+    name: terramate plan
 
-#     runs-on: ubuntu-latest
-#     container: 
-#       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+    runs-on: ubuntu-latest
+    container: 
+      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
 
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#         with:
-#           ref: ${{ github.head_ref }}
-#           fetch-depth: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
-#       - name: List changed stacks
-#         id: list
-#         run: terramate list
+      - name: List changed stacks
+        id: list
+        run: terramate list --changed
 
-#       - name: Create Terraform plan on changed stacks
-#         if: steps.list.outputs.stdout
-#         run: |
-#           terramate run terraform init
-#           terramate run terraform validate
-#           terramate run terraform plan -out out.tfplan
+      - name: Create Terraform plan on changed stacks
+        if: steps.list.outputs.stdout
+        run: |
+          terramate run terraform init
+          terramate run terraform validate
+          terramate run terraform plan -out out.tfplan
 
-#       - name: Generate Preview Comment
-#         if: steps.list.outputs.stdout
-#         id: comment
-#         run: |
-#           echo "### List of Changed Stacks" >> pr-comment.txt
-#           echo >> pr-comment.txt
-#           echo '```bash' >> pr-comment.txt
-#           echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
-#           echo '```' >> pr-comment.txt
-#           echo >> pr-comment.txt
-#           echo "#### Terraform Plan" >> pr-comment.txt
-#           echo >> pr-comment.txt
-#           echo '```terraform' >> pr-comment.txt
-#           terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
-#           echo '```' >> pr-comment.txt
-#           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
-#       - name: Inform about no Changed Stacks
-#         if: (!steps.list.outputs.stdout)
-#         run: |
-#           echo '### No changed stacks.' >> pr-comment.txt
-#           cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
-#       - name: Publish Plans for Changed Stacks
-#         uses: marocchino/sticky-pull-request-comment@v2
-#         with:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#           header: terraform-plan
-#           path: pr-comment.txt
+      - name: Generate Preview Comment
+        if: steps.list.outputs.stdout
+        id: comment
+        run: |
+          echo "### List of Changed Stacks" >> pr-comment.txt
+          echo >> pr-comment.txt
+          echo '```bash' >> pr-comment.txt
+          echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
+          echo '```' >> pr-comment.txt
+          echo >> pr-comment.txt
+          echo "#### Terraform Plan" >> pr-comment.txt
+          echo >> pr-comment.txt
+          echo '```terraform' >> pr-comment.txt
+          terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
+          echo '```' >> pr-comment.txt
+          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+      - name: Inform about no Changed Stacks
+        if: (!steps.list.outputs.stdout)
+        run: |
+          echo '### No changed stacks.' >> pr-comment.txt
+          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+      - name: Publish Plans for Changed Stacks
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: terraform-plan
+          path: pr-comment.txt
 
 #   # terramate-apply:
 #   #   name: Terramate Apply
@@ -91,65 +91,65 @@
 #   #       env:
 #   #         GITHUB_TOKEN: ${{ github.token }}
 
-name: Terraform Deployment
+# name: Terraform Deployment
 
-on:
-  push:
-    branches:
-      - terramate-test
+# on:
+#   push:
+#     branches:
+#       - terramate-test
  
-jobs:
-  terramate-plan:
-    name: Terramate Plan
-    permissions:
-      id-token: write
-      contents: read
+# jobs:
+#   terramate-plan:
+#     name: Terramate Plan
+#     permissions:
+#       id-token: write
+#       contents: read
 
-    runs-on: ubuntu-latest
-    container: 
-      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
+#     runs-on: ubuntu-latest
+#     container: 
+#       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+#         with:
+#           ref: ${{ github.head_ref }}
+#           fetch-depth: 0
  
-      - name: List changed stacks
-        id: list
-        run: terramate list --changed
+#       - name: List changed stacks
+#         id: list
+#         run: terramate list --changed
 
-      - name: Run Terraform init on changed stacks
-        if: steps.list.outputs.stdout
-        run: terramate run --changed -- terraform init
+#       - name: Run Terraform init on changed stacks
+#         if: steps.list.outputs.stdout
+#         run: terramate run --changed -- terraform init
 
-      - name: Create Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
-        run: terramate run terraform plan
+#       - name: Create Terraform plan on changed stacks
+#         if: steps.list.outputs.stdout
+#         run: terramate run terraform plan
 
-  # terramate-apply:
-  #   name: Terramate Apply
-  #   runs-on: ubuntu-latest
-  #   container: 
-  #     image: public.ecr.aws/o0i6i2m0/tf-actions:latest
-  #   environment: terrraform_apply
-  #   steps: 
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
+#   # terramate-apply:
+#   #   name: Terramate Apply
+#   #   runs-on: ubuntu-latest
+#   #   container: 
+#   #     image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+#   #   environment: terrraform_apply
+#   #   steps: 
+#   #     - name: Checkout
+#   #       uses: actions/checkout@v4
+#   #       with:
+#   #         fetch-depth: 0
 
-  #     - name: List changed stacks
-  #       id: list
-  #       run: terramate list 
+#   #     - name: List changed stacks
+#   #       id: list
+#   #       run: terramate list 
 
-  #     - name: Run Terraform init on changed stacks
-  #       if: steps.list.outputs.stdout
-  #       run: terramate run terraform init
+#   #     - name: Run Terraform init on changed stacks
+#   #       if: steps.list.outputs.stdout
+#   #       run: terramate run terraform init
 
-  #     - name: Apply planned changes on changed stacks
-  #       if: steps.list.outputs.stdout
-  #       run: terramate run terraform apply out.tfplan
-  #       env:
-  #         GITHUB_TOKEN: ${{ github.token }}
+#   #     - name: Apply planned changes on changed stacks
+#   #       if: steps.list.outputs.stdout
+#   #       run: terramate run terraform apply out.tfplan
+#   #       env:
+#   #         GITHUB_TOKEN: ${{ github.token }}
 
