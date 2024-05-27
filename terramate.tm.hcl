@@ -1,7 +1,20 @@
 terramate {
+  required_version = "~> 0.8.4"
+  # required_version = "~> 0.9.0-rc1"
+
   config {
-    cloud {
-      organization = "organization-short-name" # TODO: fill in your org short name
+    run {
+      env {
+     }
+    }
+
+    git {
+      default_branch = "feat/terramate-lambda"
+      default_remote = "origin"
+
+      check_untracked   = false
+      check_uncommitted = false
+      check_remote      = false
     }
   }
 }
