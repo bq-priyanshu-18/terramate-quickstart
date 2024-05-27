@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
-    # environment: terrraform_apply  
+    environment: terrraform_apply  
     steps: 
       - name: Checkout
         uses: actions/checkout@v3
@@ -54,66 +54,3 @@ jobs:
         run: |
           terramate run --changed -- terraform init
           terramate run --changed -- terraform apply -input=false -auto-approve -lock-timeout=5m
-
-# name: Terraform Deployment
-
-# on:
-#   push:
-#     branches:
-#       - terramate-test
- 
-# jobs:
-#   terramate-plan:
-#     name: Terramate Plan
-#     permissions:
-#       id-token: write
-#       contents: read
-
-#     runs-on: ubuntu-latest
-#     container: 
-#       image: public.ecr.aws/o0i6i2m0/tf-actions:latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-#         with:
-#           ref: ${{ github.head_ref }}
-#           fetch-depth: 0
- 
-#       - name: List changed stacks
-#         id: list
-#         run: terramate list --changed
-
-#       - name: Run Terraform init on changed stacks
-#         if: steps.list.outputs.stdout
-#         run: terramate run --changed -- terraform init
-
-#       - name: Create Terraform plan on changed stacks
-#         if: steps.list.outputs.stdout
-#         run: terramate run terraform plan
-
-#   # terramate-apply:
-#   #   name: Terramate Apply
-#   #   runs-on: ubuntu-latest
-#   #   container: 
-#   #     image: public.ecr.aws/o0i6i2m0/tf-actions:latest
-#   #   environment: terrraform_apply
-#   #   steps: 
-#   #     - name: Checkout
-#   #       uses: actions/checkout@v4
-#   #       with:
-#   #         fetch-depth: 0
-
-#   #     - name: List changed stacks
-#   #       id: list
-#   #       run: terramate list 
-
-#   #     - name: Run Terraform init on changed stacks
-#   #       if: steps.list.outputs.stdout
-#   #       run: terramate run terraform init
-
-#   #     - name: Apply planned changes on changed stacks
-#   #       if: steps.list.outputs.stdout
-#   #       run: terramate run terraform apply out.tfplan
-#   #       env:
-#   #         GITHUB_TOKEN: ${{ github.token }}
-
