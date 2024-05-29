@@ -3,7 +3,7 @@ name: Terraform Deployment
 on:
   push:
     branches:
-      - main
+      - terramate-test
  
 permissions:
   issues: write
@@ -15,7 +15,10 @@ jobs:
   terramate-plan:
     name: terramate plan
     runs-on: ubuntu-latest
-
+    outputs:
+      list_output: ${{ steps.list.outputs.stdout }}
+      # output2: ${{ steps.step2.outputs.test }}
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -79,8 +82,6 @@ jobs:
     needs: terramate-plan
     name: Terramate Apply
     runs-on: ubuntu-latest
-    container: 
-      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
     environment: terrraform_apply  
     steps: 
       - name: Checkout
@@ -100,11 +101,11 @@ jobs:
           terraform_version: 1.7.4
           terraform_wrapper: false 
 
-      - name: List changed stacks
-        id: list
-        run: terramate list
+      # - name: List changed stacks
+      #   id: list
+      #   run: terramate list
 
       - name: Apply Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
+        if: needs.terramate-plan.outputs.list_output
         run: |
           terramate run terraform apply -input=false -auto-approve
