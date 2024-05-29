@@ -16,7 +16,7 @@ permissions:
   pull-requests: write      
 
 jobs:
-  terramate-plan:
+  debugf-plan:
     name: terramate plan
     runs-on: ubuntu-latest
     outputs:
@@ -24,99 +24,79 @@ jobs:
       # output2: ${{ steps.step2.outputs.test }}
       
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
+      - name: Debug Info
+        run: |
+          echo "Tag: ${{ github.ref }}"
+          echo "Event: ${{ toJson(github.event) }}"
+  # terramate-plan:
+  #   name: terramate plan
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     list_output: ${{ steps.list.outputs.stdout }}
+  #     # output2: ${{ steps.step2.outputs.test }}
       
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
-        with:
-          version: 0.8.4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.head_ref }}
+  #         fetch-depth: 0
+      
+  #     - name: Install Terramate
+  #       uses: terramate-io/terramate-action@v1
+  #       with:
+  #         version: 0.8.4
   
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.4
-          terraform_wrapper: false
+  #     - name: Install Terraform
+  #       uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: 1.8.4
+  #         terraform_wrapper: false
 
-      - name: terramate generate
-        run: terramate generate  
+  #     - name: terramate generate
+  #       run: terramate generate  
 
-      - name: Add untracked files
-        run: git add .
+  #     - name: Add untracked files
+  #       run: git add .
 
-      - name: List changed stacks
-        id: list
-        run: terramate list 
+  #     - name: List changed stacks
+  #       id: list
+  #       run: terramate list 
 
-      - name: Create Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
-        run: |
-          terramate run terraform init
-          git add .
-          terramate run terraform validate
-          terramate run terraform plan -out out.tfplan
+  #     - name: Create Terraform plan on changed stacks
+  #       if: steps.list.outputs.stdout
+  #       run: |
+  #         terramate run terraform init
+  #         git add .
+  #         terramate run terraform validate
+  #         terramate run terraform plan -out out.tfplan
 
-      - name: Generate Preview Comment
-        if: steps.list.outputs.stdout
-        id: comment
-        run: |
-          echo "### List of Changed Stacks" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```bash' >> pr-comment.txt
-          echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo "#### Terraform Plan" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```terraform' >> pr-comment.txt
-          terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+  #     - name: Generate Preview Comment
+  #       if: steps.list.outputs.stdout
+  #       id: comment
+  #       run: |
+  #         echo "### List of Changed Stacks" >> pr-comment.txt
+  #         echo >> pr-comment.txt
+  #         echo '```bash' >> pr-comment.txt
+  #         echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
+  #         echo '```' >> pr-comment.txt
+  #         echo >> pr-comment.txt
+  #         echo "#### Terraform Plan" >> pr-comment.txt
+  #         echo >> pr-comment.txt
+  #         echo '```terraform' >> pr-comment.txt
+  #         terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
+  #         echo '```' >> pr-comment.txt
+  #         cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
 
-      - name: Inform about no Changed Stacks
-        if: (!steps.list.outputs.stdout)
-        run: |
-          echo '### No changed stacks.' >> pr-comment.txt
-          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
+  #     - name: Inform about no Changed Stacks
+  #       if: (!steps.list.outputs.stdout)
+  #       run: |
+  #         echo '### No changed stacks.' >> pr-comment.txt
+  #         cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
 
-      - name: Publish Plans for Changed Stacks
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: terraform-plan
-          path: pr-comment.txt
-
-  terramate-apply:
-    needs: terramate-plan
-    name: Terramate Apply
-    runs-on: ubuntu-latest
-    environment: terrraform_apply  
-    steps: 
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-
-      - name: Install Terramate
-        uses: terramate-io/terramate-action@v1
-        with:
-          version: 0.8.4
-  
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.7.4
-          terraform_wrapper: false 
-
-      # - name: List changed stacks
-      #   id: list
-      #   run: terramate list
-
-      - name: Apply Terraform plan on changed stacks
-        if: needs.terramate-plan.outputs.list_output
-        run: |
-          terramate run terraform apply -input=false -auto-approve
+  #     - name: Publish Plans for Changed Stacks
+  #       uses: marocchino/sticky-pull-request-comment@v2
+  #       with:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         header: terraform-plan
+  #         path: pr-comment.txt
