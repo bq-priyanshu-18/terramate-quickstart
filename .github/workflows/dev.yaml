@@ -50,8 +50,8 @@ jobs:
       - name: Create Terraform plan on changed stacks
         if: steps.list.outputs.stdout
         run: |
-          git add .
           terramate run terraform init
+          git add .
           terramate run terraform validate
           terramate run terraform plan -out out.tfplan
 
