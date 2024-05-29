@@ -26,8 +26,8 @@ generate_hcl "_main.tf" {
 
     provider "aws" {
       region = us-east-2
-      allowed_account_ids = ["63421378578223"]
-      shared_config_files = [var.tfc_aws_dynamic_credentials.default.shared_config_file]
+      # allowed_account_ids = ["63421378578223"]
+      # shared_config_files = [var.tfc_aws_dynamic_credentials.default.shared_config_file]
     }  
   }
 }

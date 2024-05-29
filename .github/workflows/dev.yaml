@@ -37,6 +37,9 @@ jobs:
           terraform_version: 1.8.4
           terraform_wrapper: false
 
+      - name: terramate generate
+        run: terramate generate  
+                
       - name: List changed stacks
         id: list
         run: terramate list 
