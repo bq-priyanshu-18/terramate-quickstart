@@ -39,7 +39,10 @@ jobs:
 
       - name: terramate generate
         run: terramate generate  
-                
+
+      - name: Stage changes
+        run: git add .
+
       - name: List changed stacks
         id: list
         run: terramate list 
