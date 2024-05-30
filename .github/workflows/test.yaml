@@ -1,22 +1,24 @@
-name: Preview Terraform
+name: Terraform Deployment
 
 on:
   push:
     branches:
-      - terramate-testa
-
+      - dpr-test
+ 
 permissions:
   issues: write
   id-token: write
   contents: write
-  pull-requests: write
+  pull-requests: write      
 
 jobs:
-  infra-plan:
-    name: infra-plan
+  terramate-plan:
+    name: terramate plan
+
     runs-on: ubuntu-latest
-    container: 
-      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+    # container: 
+    #   image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -24,65 +26,52 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: terramate generate
-        run: terramate generate
+      - name: Install Terramate
+        uses: terramate-io/terramate-action@v1
+        with:
+          version: 0.8.4
+  
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.4
+          terraform_wrapper: false
 
-      - name: List changed stacks
-        id: list
-        run: terramate list  
-
-      - name: Create Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
+      - name: Run Terraform init on changed stacks
+        # if: steps.list.outputs.stdout
+        id: init
         run: |
-          terramate run --changed -- terraform init
-          terramate run --changed -- terraform validate
-          terramate run --changed -- terraform plan -out out.tfplan
-
-        # terramate run terraform init
-        # terramate run terraform validate
-        # terramate run terraform plan -out out.tfplan
-
-      - name: Generate Preview Comment
-        if: steps.list.outputs.stdout
-        id: comment
-        run: |
-          echo "### List of Changed Stacks" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```bash' >> pr-comment.txt
-          echo "${{ steps.list.outputs.stdout }}" >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo "#### Terraform Plan" >> pr-comment.txt
-          echo >> pr-comment.txt
-          echo '```terraform' >> pr-comment.txt
-          terramate run terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >> pr-comment.txt
-          echo '```' >> pr-comment.txt
-          cat pr-comment.txt >> $GITHUB_STEP_SUMMARY
-
-  infra-apply:
-    name: infra-apply
+          terramate list
+          terramate run terraform init
+          terramate run terraform plan
+  terramate-apply:
+    needs: terramate-plan
+    name: Terramate Apply
     runs-on: ubuntu-latest
-    container: 
-      image: public.ecr.aws/o0i6i2m0/tf-actions:latest
-    # environment: terrraform_apply  
-    steps:
+    # container: 
+    #   image: public.ecr.aws/o0i6i2m0/tf-actions:latest
+    environment: terrraform_apply  
+    steps: 
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-      - name: terramate generate
-        run: terramate generate
 
-      - name: List changed stacks
-        id: list
-        run: terramate list  
-
-      - name: Create Terraform plan on changed stacks
-        if: steps.list.outputs.stdout
+      - name: Install Terramate
+        uses: terramate-io/terramate-action@v1
+        with:
+          version: 0.8.4
+  
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.4
+          terraform_wrapper: false
+          
+      - name: Run Terraform init on changed stacks
+        # if: steps.list.outputs.stdout
+        id: init
         run: |
           terramate run --changed -- terraform init
-
-      - name: Apply Terraform plan on changed stacks
-        run: |
-          terramate run terraform apply
+          terramate run --changed -- terraform apply -input=false -auto-approve -lock-timeout=5m
